@@ -157,7 +157,7 @@ class AutoSceneEncoder(BaseNet, ABC):
     def forward(self, cam, x):
         cam = self.flatten(cam)  # 4x4 -> 16
         cam_code = self.cam_encode(cam)  # 16 -> 625
-        features_cam = self.CLN(cam_code)  # 625 -> (25x25x15)
+        features_cam = self.CLN(cam_code)  # 625 -> (25x25x16)
         # features_cam = features_cam.view(-1, 15, 625)
         # features_cam = torch.cat((features_cam, cam_code.unsqueeze(1)), 1)  # 15x625 -> 16x625
         # features_cam = self.mixer(features_cam)
@@ -176,6 +176,14 @@ class AutoSceneEncoder(BaseNet, ABC):
 
         # return features_cam, features_image, recons, cam2img
         return cam_code, image_code, recons, cam2img
+
+    def render(self, cam):
+        cam = self.flatten(cam)  # 4x4 -> 16
+        cam_code = self.cam_encode(cam)  # 16 -> 625
+        features_cam = self.CLN(cam_code)  # 625 -> (25x25x15)
+        features_cam = features_cam.view(-1, 16, 25, 25)
+        cam2img = self.image_decoder(features_cam)
+        return cam2img
 
     def loss_function(self, cam, x):
         cam = self.flatten(cam)

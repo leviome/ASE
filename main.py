@@ -20,7 +20,7 @@ from nets.ase_net import AutoSceneEncoder as ASE
 from nets.utils import CycleScheduler, loss_function, decimal, psnr
 
 log_writer = SummaryWriter()
-DATE = '0704_1'
+DATE = '0711_1'
 
 
 class Trainer:
@@ -187,7 +187,7 @@ def get_args():
 
 
 def _main():
-    date = '0630'
+    date = DATE
     args = get_args()
 
     logging.basicConfig(level=logging.INFO,

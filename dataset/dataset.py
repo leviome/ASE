@@ -36,7 +36,9 @@ class NerfData(Dataset):
 
 
 class CameraViewDataSet(Dataset):
-    def __init__(self, root="/home/liweiliao/Projects/NeRF/NAE/lego", transform=transform_):
+    def __init__(self, root="/home/liweiliao/Projects/NeRF/NAE/lego", transform=transform_, mode='train'):
+        assert mode in ["train", "test"]
+        self.mode = mode
         self.transform = transform(800)
         self.root = root
         assert 'transforms_train.json' in os.listdir(root)
@@ -44,16 +46,24 @@ class CameraViewDataSet(Dataset):
             camera_info = json.loads(f.read())
         # print(camera_info)
         self.cam = camera_info
+        self.frames = self.cam["frames"]
+        # self.test_list = ["0371.png", "0424.png", "0688.png", "0795.png"]
+        separate_point = (9 * len(self.frames)) // 10
+        self.train_samples = self.cam["frames"][:separate_point]
+        self.test_samples = self.cam["frames"][separate_point:]
+        
 
     def __getitem__(self, i):
-        pairs = self.cam["frames"][i]
-        image_path = osp.join(self.root, 'train', pairs['file_path'].split('r_0')[-1])
+        samples = self.train_samples if self.mode == 'train' else self.test_samples
+        pairs = samples[i]
+        ima = pairs['file_path'].split('r_0')[-1]
+        image_path = osp.join(self.root, 'train', ima)
         img = self.transform(Image.open(image_path))
         cam = torch.Tensor(np.array(pairs['transform_matrix']))
         return img, cam
 
     def __len__(self):
-        return len(self.cam["frames"])
+        return len(self.train_samples) if self.mode == 'train' else len(self.test_samples)
 
 
 def _test():
